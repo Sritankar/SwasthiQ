@@ -6,6 +6,11 @@ Full-stack implementation of the Pharmacy Hiring Assignment with:
 - `frontend/`: React + Vite UI (hooks, reusable components, real API calls)
 - `README.md`: Setup, API contracts, and consistency rules
 
+## Live Deployment
+
+- App: `https://swasthiq-2pzm.onrender.com/`
+- Health: `https://swasthiq-2pzm.onrender.com/api/health`
+
 ## Implemented Pages
 
 1. Dashboard page (sales overview)
@@ -112,6 +117,8 @@ This repo supports one Render web service using Docker:
 1. Open `https://<your-render-service>.onrender.com`
 2. Check health endpoint:
    - `https://<your-render-service>.onrender.com/api/health`
+3. Current deployed service:
+   - `https://swasthiq-2pzm.onrender.com/`
 
 ### Notes
 
