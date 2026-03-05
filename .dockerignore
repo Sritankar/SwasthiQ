@@ -1,0 +1,10 @@
+.git
+.gitignore
+.venv
+.vercel
+backend/.venv
+frontend/node_modules
+frontend/dist
+**/__pycache__
+**/*.pyc
+backend/pharmacy.db

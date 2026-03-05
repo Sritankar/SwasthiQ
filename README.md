@@ -20,9 +20,9 @@ Full-stack implementation of the Pharmacy Hiring Assignment with:
 ## Project Structure
 
 ```text
+api/
+  index.py
 backend/
-  api/
-    index.py
   app/
     main.py
     database.py
@@ -34,7 +34,6 @@ backend/
       dashboard.py
       inventory.py
   requirements.txt
-  vercel.json
 frontend/
   src/
     api/
@@ -42,7 +41,10 @@ frontend/
     pages/
     utils/
   package.json
-  vercel.json
+Dockerfile
+render.yaml
+requirements.txt
+vercel.json
 ```
 
 ## Run Locally
@@ -75,76 +77,46 @@ If needed, set API base URL:
 set VITE_API_BASE_URL=http://localhost:8000/api
 ```
 
-## Deploy to Vercel
+## Deploy to Render (Single URL for Frontend + Backend)
 
-Deploy as 2 Vercel projects:
+This repo supports one Render web service using Docker:
 
-1. Backend project from `backend/` (FastAPI serverless function)
-2. Frontend project from `frontend/` (React/Vite static app)
+1. Frontend is built in Docker and served by FastAPI at `/`
+2. Backend APIs run at `/api/*` on the same domain
 
-### Prerequisites
+### Option A: Blueprint deploy (`render.yaml`)
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Login: `vercel login`
-3. Use a managed Postgres database (Neon, Supabase, Vercel Postgres, etc.)
+1. Push this repo to GitHub.
+2. In Render dashboard, choose **New** -> **Blueprint**.
+3. Select this repo and deploy.
+4. Render creates:
+   - Web service: `flow-swasthiq`
+   - Postgres database: `flow-swasthiq-db`
+5. Set `ALLOWED_ORIGINS` in the web service environment to your Render app URL:
+   - `https://<your-render-service>.onrender.com`
+6. Redeploy the web service.
 
-### 1) Deploy Backend (`backend/`)
+### Option B: Manual deploy
 
-```bash
-cd backend
-vercel
-vercel env add DATABASE_URL production
-vercel --prod
-```
+1. In Render dashboard, create **PostgreSQL** service.
+2. Create **Web Service** from this repo with:
+   - Runtime: `Docker`
+   - Dockerfile Path: `./Dockerfile`
+3. Add environment variables in the web service:
+   - `DATABASE_URL` = Render Postgres Internal/External connection string
+   - `ALLOWED_ORIGINS` = `https://<your-render-service>.onrender.com`
+4. Deploy.
 
-After `vercel --prod`, note the backend URL:
+### Verify
 
-`https://<backend-project>.vercel.app`
-
-### 2) Deploy Frontend (`frontend/`)
-
-```bash
-cd ../frontend
-vercel
-vercel env add VITE_API_BASE_URL production
-vercel --prod
-```
-
-For `VITE_API_BASE_URL`, enter:
-
-`https://<backend-project>.vercel.app/api`
-
-After `vercel --prod`, note the frontend URL:
-
-`https://<frontend-project>.vercel.app`
-
-### 3) Set Backend CORS to frontend URL and redeploy backend
-
-```bash
-cd ../backend
-vercel env add ALLOWED_ORIGINS production
-vercel --prod
-```
-
-For `ALLOWED_ORIGINS`, enter:
-
-`https://<frontend-project>.vercel.app`
-
-For multiple origins, use comma-separated values.
-
-### 4) Verify
-
-```bash
-curl https://<backend-project>.vercel.app/api/health
-```
-
-Open `https://<frontend-project>.vercel.app` and confirm dashboard data loads.
+1. Open `https://<your-render-service>.onrender.com`
+2. Check health endpoint:
+   - `https://<your-render-service>.onrender.com/api/health`
 
 ### Notes
 
-1. Do not use SQLite in Vercel production. Set `DATABASE_URL` to Postgres.
-2. `backend/vercel.json` is configured to route all backend requests to FastAPI.
-3. `frontend/vercel.json` handles SPA rewrites for React Router.
+1. `frontend/src/api/client.js` already uses `/api` in production, so frontend and backend stay connected on one domain.
+2. Do not use SQLite on Render production unless you attach a persistent disk.
 
 ## API Contracts
 

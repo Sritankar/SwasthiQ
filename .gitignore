@@ -8,5 +8,8 @@ node_modules/
 dist/
 build/
 .env
+.vercel/
 .DS_Store
 Thumbs.db
+
+.vercel
