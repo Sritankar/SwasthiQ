@@ -21,6 +21,8 @@ Full-stack implementation of the Pharmacy Hiring Assignment with:
 
 ```text
 backend/
+  api/
+    index.py
   app/
     main.py
     database.py
@@ -32,6 +34,7 @@ backend/
       dashboard.py
       inventory.py
   requirements.txt
+  vercel.json
 frontend/
   src/
     api/
@@ -39,6 +42,7 @@ frontend/
     pages/
     utils/
   package.json
+  vercel.json
 ```
 
 ## Run Locally
@@ -71,68 +75,76 @@ If needed, set API base URL:
 set VITE_API_BASE_URL=http://localhost:8000/api
 ```
 
-## Deploy to Heroku
+## Deploy to Vercel
 
-This repository supports single-app Heroku deployment using Docker:
+Deploy as 2 Vercel projects:
 
-- `frontend/` is built during image build.
-- Built static files are served by FastAPI.
-- API is exposed at `/api/*` and UI at `/`.
+1. Backend project from `backend/` (FastAPI serverless function)
+2. Frontend project from `frontend/` (React/Vite static app)
 
 ### Prerequisites
 
-1. Install Docker Desktop and Heroku CLI.
-2. Login: `heroku login`
-3. Make sure your project is committed in git.
+1. Install Vercel CLI: `npm i -g vercel`
+2. Login: `vercel login`
+3. Use a managed Postgres database (Neon, Supabase, Vercel Postgres, etc.)
 
-### 1) Create Heroku app and set container stack
-
-```bash
-heroku create <app-name>
-heroku stack:set container -a <app-name>
-```
-
-### 2) Add PostgreSQL (recommended)
+### 1) Deploy Backend (`backend/`)
 
 ```bash
-heroku addons:create heroku-postgresql:mini -a <app-name>
+cd backend
+vercel
+vercel env add DATABASE_URL production
+vercel --prod
 ```
 
-Heroku automatically injects `DATABASE_URL`.
+After `vercel --prod`, note the backend URL:
 
-### 3) Configure CORS origin
+`https://<backend-project>.vercel.app`
+
+### 2) Deploy Frontend (`frontend/`)
 
 ```bash
-heroku config:set ALLOWED_ORIGINS=https://<app-name>.herokuapp.com -a <app-name>
+cd ../frontend
+vercel
+vercel env add VITE_API_BASE_URL production
+vercel --prod
 ```
+
+For `VITE_API_BASE_URL`, enter:
+
+`https://<backend-project>.vercel.app/api`
+
+After `vercel --prod`, note the frontend URL:
+
+`https://<frontend-project>.vercel.app`
+
+### 3) Set Backend CORS to frontend URL and redeploy backend
+
+```bash
+cd ../backend
+vercel env add ALLOWED_ORIGINS production
+vercel --prod
+```
+
+For `ALLOWED_ORIGINS`, enter:
+
+`https://<frontend-project>.vercel.app`
 
 For multiple origins, use comma-separated values.
 
-### 4) Deploy
+### 4) Verify
 
 ```bash
-git push heroku main
+curl https://<backend-project>.vercel.app/api/health
 ```
 
-If your branch is `master`, use `git push heroku master`.
-
-### 5) Verify
-
-```bash
-heroku open -a <app-name>
-heroku logs --tail -a <app-name>
-```
-
-Health check:
-
-```bash
-curl https://<app-name>.herokuapp.com/api/health
-```
+Open `https://<frontend-project>.vercel.app` and confirm dashboard data loads.
 
 ### Notes
 
-1. The app defaults to SQLite locally, but use Heroku Postgres in production.
-2. You do not need `VITE_API_BASE_URL` for this Heroku setup because frontend calls `/api` in production by default.
+1. Do not use SQLite in Vercel production. Set `DATABASE_URL` to Postgres.
+2. `backend/vercel.json` is configured to route all backend requests to FastAPI.
+3. `frontend/vercel.json` handles SPA rewrites for React Router.
 
 ## API Contracts
 
